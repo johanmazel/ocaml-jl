@@ -1,7 +1,7 @@
 OASISFormat: 0.3
 Name:        jl
 Version:     0.1
-Synopsis:    A bunch of generic module.
+Synopsis:    A bunch of module.
 Authors:     Johan Mazel
 License:     GPL-3
 Plugins:     META (0.3), StdFiles (0.3)
@@ -31,13 +31,3 @@ Library jl
                  sexplib.syntax,
                  bin_prot,
                  bin_prot.syntax
-  XMETARequires: core,
-                 core_extended,
-                 batteries,
-                 xmlm,
-                 xml-light,
-                 ipaddr,
-                 threads,
-                 comparelib,
-                 sexplib,
-                 bin_prot

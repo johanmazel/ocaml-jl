@@ -25,8 +25,7 @@ let to_string
 
   Batteries.IO.close_out innerIO_output
 
-(* TODO: replace by fold_left *)
-let fold_succ f l acc =
+let fold_succ f acc l =
   if length l = 0 then
     acc
   else

@@ -1,0 +1,104 @@
+
+open Printf
+
+open Bin_prot.Std
+
+(* open Maps *)
+
+type t =
+  {
+    name : string;
+    detector_setting_int_map : Detector_setting.t Core.Std.Int.Map.t;
+  }
+with compare, bin_io
+
+let new_t
+    name
+    detector_setting_int_map
+    =
+  {
+    name = name;
+    detector_setting_int_map = detector_setting_int_map;
+  }
+
+let to_list t =
+  let bindings_list = Core.Std.Int.Map.to_alist t.detector_setting_int_map in
+  let detector_setting_list = List.map snd bindings_list in
+  detector_setting_list
+
+let is_last detector_setting t =
+  let list = to_list t in
+  
+  let last = List.hd (List.rev list) in
+  
+  if Detector_setting.compare last detector_setting = 0 then true else false
+
+let is_first detector_setting t =
+  let list = to_list t in
+  
+  let first = List.hd list in
+  
+  if Detector_setting.compare first detector_setting = 0 then true else false
+
+let length t =
+  let bindings_list = Core.Std.Int.Map.to_alist t.detector_setting_int_map in
+  List.length bindings_list
+
+let find t indice = Core.Std.Int.Map.find_exn t.detector_setting_int_map indice
+
+let of_file
+    file_name
+    =
+  if Sys.file_exists file_name = false then
+    (
+      print_endline (sprintf "Detector_setting_container: of_file: %s does not exists in %s" file_name (Sys.getcwd ()));
+      assert(false);
+    );
+
+  let detector_setting_int_map =
+    let line_list = Batteries.List.of_enum (Batteries.File.lines_of file_name) in
+    
+    let detector_setting_list =
+      Batteries.List.mapi
+	(fun indice string ->
+	  Detector_setting.new_t
+	    indice
+	    string
+	)
+	line_list
+    in
+    
+    let detector_setting_int_map =
+      List.fold_left
+	(fun acc detector_setting ->
+	  Core.Std.Int.Map.add
+	    acc
+	    detector_setting.Detector_setting.indice
+	    detector_setting
+	)
+	Core.Std.Int.Map.empty
+	detector_setting_list
+    in
+    
+    detector_setting_int_map
+  in
+  
+  new_t
+    ""
+    detector_setting_int_map
+
+let to_string
+    ?sep: (sep =" ")
+    ?element_sugar: (element_sugar ="")
+    ?prefix: (prefix ="")
+    reference_detector_setting_container
+    =
+  let detector_setting_list = to_list reference_detector_setting_container in
+  
+  Utils_batteries.to_string_list
+    ~first: ""
+    ~last: ""
+    ~sep: sep
+    (* (fun value -> prefix ^ element_sugar ^ (Detector_setting.to_string To_string_mode.Simple value) ^ element_sugar) *)
+    (fun value -> prefix ^ element_sugar ^ (Detector_setting.to_string value) ^ element_sugar)
+    detector_setting_list

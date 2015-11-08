@@ -1,0 +1,43 @@
+OASISFormat: 0.3
+Name:        jl
+Version:     0.1
+Synopsis:    A bunch of generic module.
+Authors:     Johan Mazel
+License:     GPL-3
+Plugins:     META (0.3), StdFiles (0.3)
+BuildTools:  ocamlbuild
+
+Library jl
+  Path:          lib/
+  Findlibname:   jl
+  Modules:       Array_ext,
+                 List_ext,
+                 Hashset,
+                 Avltree,
+                 Iset,
+                 Set_ext,
+                 Map_ext,
+                 Set_ext_instantiations,
+                 Map_ext_instantiations,
+                 Hashtbl_utils,
+                 Hashtbl_utils_instantiations,
+                 Option_utils,
+                 Progress_manager
+  BuildDepends:  batteries,
+                 core_kernel,
+                 comparelib,
+                 comparelib.syntax,
+                 sexplib,
+                 sexplib.syntax,
+                 bin_prot,
+                 bin_prot.syntax
+  XMETARequires: core,
+                 core_extended,
+                 batteries,
+                 xmlm,
+                 xml-light,
+                 ipaddr,
+                 threads,
+                 comparelib,
+                 sexplib,
+                 bin_prot

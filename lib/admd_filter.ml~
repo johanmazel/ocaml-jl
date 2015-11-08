@@ -1,0 +1,449 @@
+
+open Printf
+
+open Sexplib.Std
+open Bin_prot.Std
+
+(* open Batteries_maps *)
+
+(* module Filter_criteria_set = Set.Make(Filter_criteria);; *)
+
+type t =
+  {
+    filter_criteria_list : Filter_criteria.t list;
+  }
+with compare, sexp, bin_io
+
+let new_t
+    filter_criteria_list
+    =
+  {
+    filter_criteria_list = filter_criteria_list;
+  }
+
+let of_xml xml =
+  if String.compare (Myxml.tag_name xml) "filter" <> 0 then
+    (
+      print_endline
+	(sprintf
+	   "Filter: of_xml: problem with tag %s in:\n%s"
+	   (Myxml.tag_name xml)
+	   (Myxml.to_string xml)
+	);
+      
+      assert(false)
+    );
+  
+  let attribs = Myxml.attributes xml in
+
+  assert(List.length attribs > 0);  
+
+  let filter_criteria_list =
+    Batteries.List.map
+      (fun ((uri, local), value) -> Filter_criteria.of_string_tuple (local, value))
+      attribs
+  in
+  
+  (* print_endline *)
+  (*   (sprintf *)
+  (*      "Filter: of_xml: filter_criteria_list:\n%s" *)
+  (*      (Utils_batteries.to_string_list *)
+  (* 	  ~sep: "\n" *)
+  (* 	  Filter_criteria.to_string *)
+  (* 	  filter_criteria_list *)
+  (*      ) *)
+  (*   ); *)
+
+  new_t
+    filter_criteria_list
+
+let to_xml t =
+  Myxml.Element
+    (
+      (
+	("","filter")
+	  ,
+	(List.map 
+	   (fun filter_criteria ->
+	     let (name, value) =
+	       Filter_criteria.to_xml_data_tuple
+		 filter_criteria
+	     in
+	     (("",name),value)
+	   )
+	   t.filter_criteria_list
+	)
+      )
+	,
+      [ ]
+    )
+
+let to_string t =
+  sprintf
+    "%s"
+    (* (Utils_batteries.to_string_list *)
+    (Xml_utils.to_string_list
+       ~sep: " "
+       Filter_criteria.to_string
+       t.filter_criteria_list)
+
+let match_five_tuple_option
+    src_ip_option
+    dst_ip_option
+    proto_option
+    src_port_option
+    dst_port_option
+    t
+    =
+  let result =
+    Batteries.List.fold_left
+      (fun acc filter_criteria ->
+	(* if acc then *)
+	(* Filter_criteria.match_packet_fields *)
+	(* src_ip_option *)
+	(* dst_ip_option *)
+	(* proto_option *)
+	(* src_port_option *)
+	(* dst_port_option *)
+	(* filter_criteria *)
+	(* else *)
+	(* acc *)
+	
+	acc
+	&&
+	  Filter_criteria.match_five_tuple_option
+	  src_ip_option
+	  dst_ip_option
+	  proto_option
+	  src_port_option
+	  dst_port_option
+	  filter_criteria
+      )
+      true
+      t.filter_criteria_list
+  in
+  
+  result
+
+let match_five_tuple
+    src_ip
+    dst_ip
+    proto
+    src_port
+    dst_port
+    t
+    =
+  Batteries.List.fold_left
+    (fun acc filter_criteria ->	
+      acc
+      &&
+	Filter_criteria.match_five_tuple
+	src_ip
+	dst_ip
+	proto
+	src_port
+	dst_port
+	filter_criteria
+    )
+    true
+    t.filter_criteria_list
+ 
+(* let to_five_tuple_flow t = *)
+(*   let filter_criteria_int_map = *)
+(*     List.fold_left *)
+(*       (fun int_map filter_criteria -> *)
+(*         let indice = Filter_criteria.to_int filter_criteria in *)
+(*         Int_map.add *)
+(*           indice *)
+(*           filter_criteria *)
+(*           int_map *)
+(*       ) *)
+(*       Int_map.empty *)
+(*       t.filter_criteria_list *)
+(*   in *)
+
+(*   let src_addr = *)
+(*     try *)
+(*       let filter_criteria = *)
+(*         Int_map.find *)
+(*           0 *)
+(*           filter_criteria_int_map *)
+(*       in *)
+(*       match filter_criteria with *)
+(*       | Filter_criteria.Src_ip addr -> *)
+(*         addr *)
+(*       | _ ->  *)
+(*         failwith  *)
+(*           (sprintf *)
+(*              "Filter: to_five_tuple_flow: unexpected filter criteria: %s" *)
+(*              (Filter_criteria.to_string filter_criteria) *)
+(*           ) *)
+(*     with *)
+(*     | Not_found -> *)
+(*       Ipv4_util.no_addr *)
+(*   in *)
+
+(*   let dst_addr = *)
+(*     try *)
+(*       let filter_criteria = *)
+(*         Int_map.find *)
+(*           1 *)
+(*           filter_criteria_int_map *)
+(*       in *)
+(*       match filter_criteria with *)
+(*       | Filter_criteria.Dst_ip addr -> *)
+(*         addr *)
+(*       | _ ->  *)
+(*         failwith  *)
+(*           (sprintf *)
+(*              "Filter: to_five_tuple_flow: unexpected filter criteria: %s" *)
+(*              (Filter_criteria.to_string filter_criteria) *)
+(*           ) *)
+(*     with *)
+(*     | Not_found -> *)
+(*       Ipv4_util.no_addr *)
+(*   in *)
+
+(*   let proto = *)
+(*     try *)
+(*       let filter_criteria = *)
+(*         Int_map.find *)
+(*           2 *)
+(*           filter_criteria_int_map *)
+(*       in *)
+(*       match filter_criteria with *)
+(*       | Filter_criteria.Admd_transport_protocol protocol -> *)
+(*         (	 *)
+(*           (\* Transport_protocol.to_int protocol *\) *)
+(*           protocol *)
+(*         ) *)
+(*       (\* | Filter_criteria.Transport_protocol string -> *\) *)
+(*       (\*   (			 *\)	 *)
+(*       (\* match string with *\) *)
+(*       (\* | "TCP" -> 6 *\) *)
+(*       (\* | "UDP" -> 17 *\) *)
+(*       (\* | "ICMP" -> 1 *\) *)
+(*       (\* | _ -> failwith (sprintf "Filter: to_five_tuple_flow: invalid string protocol: %s" string) *\) *)
+(*       (\* ) *\) *)
+(*       | _ ->  *)
+(*         failwith  *)
+(*           (sprintf *)
+(*              "Filter: to_five_tuple_flow: unexpected filter criteria: %s" *)
+(*              (Filter_criteria.to_string filter_criteria) *)
+(*           ) *)
+(*     with *)
+(*     | Not_found -> *)
+(*       (\* Transport_protocol.Other "" *\) *)
+(*       Transport_protocol.None *)
+(*   in *)
+
+(*   let src_port = *)
+(*     try *)
+(*       let filter_criteria = *)
+(*         Int_map.find *)
+(*           3 *)
+(*           filter_criteria_int_map *)
+(*       in *)
+(*       match filter_criteria with *)
+(*       | Filter_criteria.Src_port port -> *)
+(*         port *)
+(*       | _ ->  *)
+(*         failwith  *)
+(*           (sprintf *)
+(*              "Filter: to_five_tuple_flow: unexpected filter criteria: %s" *)
+(*              (Filter_criteria.to_string filter_criteria) *)
+(*           ) *)
+(*     with *)
+(*     | Not_found -> *)
+(*       -1 *)
+(*   in *)
+
+(*   let dst_port = *)
+(*     try *)
+(*       let filter_criteria = *)
+(*         Int_map.find *)
+(*           4 *)
+(*           filter_criteria_int_map *)
+(*       in *)
+(*       match filter_criteria with *)
+(*       | Filter_criteria.Dst_port port -> *)
+(*         port *)
+(*       | _ ->  *)
+(*         failwith  *)
+(*           (sprintf *)
+(*              "Filter: to_five_tuple_flow: unexpected filter criteria: %s" *)
+(*              (Filter_criteria.to_string filter_criteria) *)
+(*           ) *)
+(*     with *)
+(*     | Not_found -> *)
+(*       -1 *)
+(*   in *)
+
+(*   Five_tuple_flow.new_t *)
+(*     src_addr *)
+(*     dst_addr *)
+(*     (Transport_protocol_data_for_metrics.of_admd_transport_protocol admd_proto) *)
+(*     src_port *)
+(*     dst_port *)
+
+(* let to_five_tuple_option t = *)
+(*   let filter_criteria_int_map = *)
+(*     List.fold_left *)
+(*       (fun int_map filter_criteria -> *)
+(*         let indice = Filter_criteria.to_int filter_criteria in *)
+(*         Int_map.add *)
+(*           indice *)
+(*           filter_criteria *)
+(*           int_map *)
+(*       ) *)
+(*       Int_map.empty *)
+(*       t.filter_criteria_list *)
+(*   in *)
+
+(*   let src_addr_option = *)
+(*     try *)
+(*       let filter_criteria = *)
+(*         Int_map.find *)
+(*           0 *)
+(*           filter_criteria_int_map *)
+(*       in *)
+(*       match filter_criteria with *)
+(*       | Filter_criteria.Src_ip addr -> *)
+(*         Some addr *)
+(*       | _ ->  *)
+(*         failwith  *)
+(*           (sprintf *)
+(*              "Filter: to_five_tuple_flow: unexpected filter criteria: %s" *)
+(*              (Filter_criteria.to_string filter_criteria) *)
+(*           ) *)
+(*     with *)
+(*     | Not_found -> *)
+(*       None *)
+(*   in *)
+
+(*   let dst_addr_option = *)
+(*     try *)
+(*       let filter_criteria = *)
+(*         Int_map.find *)
+(*           1 *)
+(*           filter_criteria_int_map *)
+(*       in *)
+(*       match filter_criteria with *)
+(*       | Filter_criteria.Dst_ip addr -> *)
+(*         Some addr *)
+(*       | _ ->  *)
+(*         failwith  *)
+(*           (sprintf *)
+(*              "Filter: to_five_tuple_flow: unexpected filter criteria: %s" *)
+(*              (Filter_criteria.to_string filter_criteria) *)
+(*           ) *)
+(*     with *)
+(*     | Not_found -> *)
+(*       None *)
+(*   in *)
+
+(*   let proto_option = *)
+(*     try *)
+(*       let filter_criteria = *)
+(*         Int_map.find *)
+(*           2 *)
+(*           filter_criteria_int_map *)
+(*       in *)
+(*       match filter_criteria with *)
+(*       | Filter_criteria.Transport_protocol protocol -> *)
+(*         (	 *)
+(* 	  Some (Transport_protocol.to_int protocol) *)
+(*         ) *)
+(*       (\* | Filter_criteria.Proto string -> *\) *)
+(*       (\*   ( *\) *)
+(*       (\*     Some *\) *)
+(*       (\*       (match string with *\) *)
+(*       (\*       | "TCP" -> 6 *\) *)
+(*       (\*       | "UDP" -> 17 *\) *)
+(*       (\*       | "ICMP" -> 1 *\) *)
+(*       (\*       | _ -> failwith (sprintf "Filter: to_five_tuple_flow: invalid string protocol: %s" string) *\) *)
+(*       (\*       ) *\) *)
+(*       (\*   ) *\) *)
+(*       | _ ->  *)
+(*         failwith  *)
+(*           (sprintf *)
+(*              "Filter: to_five_tuple_flow: unexpected filter criteria: %s" *)
+(*              (Filter_criteria.to_string filter_criteria) *)
+(*           ) *)
+(*     with *)
+(*     | Not_found -> *)
+(*       None *)
+(*   in *)
+
+(*   let src_port_option = *)
+(*     try *)
+(*       let filter_criteria = *)
+(*         Int_map.find *)
+(*           3 *)
+(*           filter_criteria_int_map *)
+(*       in *)
+(*       match filter_criteria with *)
+(*       | Filter_criteria.Src_port port -> *)
+(*         Some port *)
+(*       | _ ->  *)
+(*         failwith  *)
+(*           (sprintf *)
+(*              "Filter: to_five_tuple_flow: unexpected filter criteria: %s" *)
+(*              (Filter_criteria.to_string filter_criteria) *)
+(*           ) *)
+(*     with *)
+(*     | Not_found -> *)
+(*       None *)
+(*   in *)
+
+(*   let dst_port_option = *)
+(*     try *)
+(*       let filter_criteria = *)
+(*         Int_map.find *)
+(*           4 *)
+(*           filter_criteria_int_map *)
+(*       in *)
+(*       match filter_criteria with *)
+(*       | Filter_criteria.Dst_port port -> *)
+(*         Some port *)
+(*       | _ ->  *)
+(*         failwith  *)
+(*           (sprintf *)
+(*              "Filter: to_five_tuple_flow: unexpected filter criteria: %s" *)
+(*              (Filter_criteria.to_string filter_criteria) *)
+(*           ) *)
+(*     with *)
+(*     | Not_found -> *)
+(*       None *)
+(*   in *)
+
+(*   (src_addr_option, *)
+(*    dst_addr_option, *)
+(*    proto_option, *)
+(*    src_port_option, *)
+(*    dst_port_option) *)
+
+(* let to_string to_string_mode t =                                                                         *)
+(* 	match to_string_mode with                                                                              *)
+(* 	| To_string_mode.Command ->                                                                            *)
+(* 			sprintf                                                                                            *)
+(* 				"%s\t%10f\t%10f"                                                                                 *)
+(* 				(Mawilab_anomaly_type.to_string to_string_mode t.mawilab_anomaly_type)                           *)
+(* 				t.distance_to_normal                                                                             *)
+(* 				t.distance_to_abnormal                                                                           *)
+(* 	| To_string_mode.Simple ->                                                                             *)
+(* 			sprintf                                                                                            *)
+(* 				"%s\t%10f\t%10f\t%s %s"                                                                          *)
+(* 				(Mawilab_anomaly_type.to_string to_string_mode t.mawilab_anomaly_type)                           *)
+(* 				t.distance_to_normal                                                                             *)
+(* 				t.distance_to_abnormal                                                                           *)
+(* 				(Heuristic_detailed_anomaly_type.to_string to_string_mode t.heuristic_anomaly_detailed_type)     *)
+(* 				(Mawilab_detector_detection_result.to_string to_string_mode t.mawilab_detector_detection_result) *)
+(* 	| To_string_mode.Normal ->                                                                             *)
+(* 			sprintf                                                                                            *)
+(* 				"%s\t%10f\t%10f\n%s\n%s"                                                                         *)
+(* 				(Mawilab_anomaly_type.to_string to_string_mode t.mawilab_anomaly_type)                           *)
+(* 				t.distance_to_normal                                                                             *)
+(* 				t.distance_to_abnormal                                                                           *)
+(* 				(Heuristic_detailed_anomaly_type.to_string to_string_mode t.heuristic_anomaly_detailed_type)     *)
+(* 				(Mawilab_detector_detection_result.to_string to_string_mode t.mawilab_detector_detection_result) *)

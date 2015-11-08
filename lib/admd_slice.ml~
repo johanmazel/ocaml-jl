@@ -1,0 +1,349 @@
+
+open Printf
+
+open Sexplib.Std
+open Bin_prot.Std
+
+let debug_enabled = ref true
+
+let set_debug bool = debug_enabled := bool
+
+let debug fmt =
+  Printf.kprintf
+    (
+      if !debug_enabled then
+	(fun s -> Format.printf "[Slice]: %s@." s)
+      else
+	ignore
+    )
+    fmt
+
+type t =
+  {
+    filter_list : Filter.t list;
+    
+    (* TODO: uncomment and use Core.Time *)
+    (* start_time_option : Core.Time.t option; *)
+    (* end_time_option : Core.Time.t option; *)
+    start_time_option : int option;
+    end_time_option : int option;
+  }
+with compare, sexp, bin_io
+
+let new_t
+    filter_list
+    start_time_option
+    end_time_option
+    =
+  {
+    filter_list = filter_list;
+    
+    start_time_option = start_time_option;
+    end_time_option = end_time_option;
+  }
+
+let to_string t =
+  sprintf
+    "slice:\n%s"
+    (* (Utils_batteries.to_string_list *)
+    (Xml_utils.to_string_list
+       ~sep: "\n"
+       Filter.to_string
+       t.filter_list)
+
+(* match to_string_mode with                                                                              *)
+(* | To_string_mode.Command ->                                                                            *)
+(* 		sprintf                                                                                            *)
+(* 			"%s\t%10f\t%10f"                                                                                 *)
+(* 			(Mawilab_anomaly_type.to_string to_string_mode t.mawilab_anomaly_type)                           *)
+(* 			t.distance_to_normal                                                                             *)
+(* 			t.distance_to_abnormal                                                                           *)
+(* | To_string_mode.Simple ->                                                                             *)
+(* 		sprintf                                                                                            *)
+(* 			"%s\t%10f\t%10f\t%s %s"                                                                          *)
+(* 			(Mawilab_anomaly_type.to_string to_string_mode t.mawilab_anomaly_type)                           *)
+(* 			t.distance_to_normal                                                                             *)
+(* 			t.distance_to_abnormal                                                                           *)
+(* 			(Heuristic_detailed_anomaly_type.to_string to_string_mode t.heuristic_anomaly_detailed_type)     *)
+(* 			(Mawilab_detector_detection_result.to_string to_string_mode t.mawilab_detector_detection_result) *)
+(* | To_string_mode.Normal ->                                                                             *)
+(* 		sprintf                                                                                            *)
+(* 			"%s\t%10f\t%10f\n%s\n%s"                                                                         *)
+(* 			(Mawilab_anomaly_type.to_string to_string_mode t.mawilab_anomaly_type)                           *)
+(* 			t.distance_to_normal                                                                             *)
+(* 			t.distance_to_abnormal                                                                           *)
+(* 			(Heuristic_detailed_anomaly_type.to_string to_string_mode t.heuristic_anomaly_detailed_type)     *)
+(* 			(Mawilab_detector_detection_result.to_string to_string_mode t.mawilab_detector_detection_result) *)
+
+(* let export_columns                                                                                                                 *)
+(* 		?sep: (sep =" ")                                                                                                               *)
+(* 		reference_detector_container                                                                                                   *)
+(* 		reference_detector_setting_container                                                                                           *)
+(* =                                                                                                                                  *)
+(* 	"Mawilab_anomaly_type"                                                                                                           *)
+(* 	^ sep                                                                                                                            *)
+(* 	^ "Normal_distance"                                                                                                              *)
+(* 	^ sep                                                                                                                            *)
+(* 	^ "Abnormal_distance"                                                                                                            *)
+(* 	^ sep                                                                                                                            *)
+(* 	^ "Heuristic_classification"                                                                                                     *)
+(* 	^ sep                                                                                                                            *)
+(* 	^ (Mawilab_detector_detection_result.export_columns ~sep: sep reference_detector_container reference_detector_setting_container) *)
+
+(* let export                                                                                                                         *)
+(* 		?sep: (sep =" ")                                                                                                               *)
+(* 		t                                                                                                                              *)
+(* =                                                                                                                                  *)
+(* 	(Mawilab_anomaly_type.to_string To_string_mode.Simple t.mawilab_anomaly_type)                                                    *)
+(* 	^ sep                                                                                                                            *)
+(* 	^ (sprintf "%10f" t.distance_to_normal)                                                                                          *)
+(* 	^ sep                                                                                                                            *)
+(* 	^ (sprintf "%10f" t.distance_to_abnormal)                                                                                        *)
+(* 	^ sep                                                                                                                            *)
+(* 	^ (sprintf "%20s"(Heuristic_detailed_anomaly_type.to_string To_string_mode.Simple t.heuristic_anomaly_detailed_type))            *)
+(* 	^ sep                                                                                                                            *)
+(* 	^ (Mawilab_detector_detection_result.export ~sep: sep t.mawilab_detector_detection_result)                                       *)
+
+let get_attributes_array xml =
+  match Myxml.tag_name xml with
+  | "anomaly" ->
+    (
+      let attribs_list = Myxml.attributes xml in
+      
+      let attributes_array = Array.of_list attribs_list in
+      
+      attributes_array
+    )
+  | _ ->
+    (
+      failwith "Mawilab_anomaly: build_from_xml: not anomaly in xml";
+    )
+
+let of_xml
+    xml
+    =
+  (* debug "of_xml: call"; *)
+
+  if String.compare (Myxml.tag_name xml) "slice" <> 0 then
+    (
+      print_endline
+	(sprintf
+	   "Slice: of_xml: problem with tag %s in:\n%s"
+	   (Myxml.tag_name xml)
+	   (Myxml.to_string xml)
+	);
+      
+      assert(false)
+    );
+  (* assert(Xml.tag xml = "slice"); *)
+  
+  let children_list = Myxml.children xml in
+  
+  let filter_xml_list =
+    Batteries.List.filter
+      (fun element ->
+	(* debug *)
+	(*   "extract_single_xml_with_tag_from_xml_list: tag %s" *)
+	(*   (Myxml.tag_name element) *)
+	(* ; *)
+	
+	if String.compare (Myxml.tag_name element) "filter" = 0 then
+	  true
+	else
+	  false
+      )
+      (Myxml.filter_element children_list)
+  in
+  
+  (* (\* NOT IN ADMD *\) *)
+  (* if List.length filter_xml_list = 0 then *)
+  (*   ( *)
+  (*     print_endline *)
+  (* 	(sprintf *)
+  (* 	   "Slice: of_xml: no filter in:\n%s" *)
+  (* 	   (Xml.to_string xml) *)
+  (* 	); *)
+  (*     assert(false); *)
+  (*   ); *)
+
+  let filter_list =
+    Batteries.List.map
+      Filter.of_xml
+      filter_xml_list
+  in
+  
+  let from_xml_list =
+    Batteries.List.filter
+      (fun element ->
+	if String.compare (Myxml.tag_name element) "from" = 0 then
+	  true
+	else
+	  false
+      )
+      (Myxml.filter_element children_list)
+  in
+  
+  let start_time_option =
+    match List.length from_xml_list with
+    | 0 -> None
+    | 1 ->
+      let from_xml = List.hd from_xml_list in
+      
+      let attribute_hashtable = Xmlm_utils.extract_attribute_hashtable_from_xml from_xml in
+      
+      let from_sec = int_of_string (Hashtbl.find attribute_hashtable ("","sec")) in
+      let from_usec = int_of_string (Hashtbl.find attribute_hashtable ("","usec")) in
+      
+      assert(from_usec = 0);
+      
+      Some from_sec
+    | _ -> assert(false)
+  in
+  
+  let to_xml_list =
+    Batteries.List.filter
+      (fun element ->
+	if String.compare (Myxml.tag_name element) "to" = 0 then
+	  true
+	else
+	  false
+      )
+      (Myxml.filter_element children_list)
+  in
+  
+  let end_time_option =
+    match List.length to_xml_list with
+    | 0 -> None
+    | 1 ->
+      let to_xml = List.hd to_xml_list in
+      
+      (* let to_attribs_list = Xml.attribs to_xml in                *)
+      (* let to_attributes_array = Array.of_list to_attribs_list in *)
+      (* let to_sec_tuple = to_attributes_array.(0) in              *)
+      (* let to_usec_tuple = to_attributes_array.(1) in             *)
+      (* let to_sec = int_of_string (snd to_sec_tuple) in           *)
+      (* let to_usec = int_of_string (snd to_usec_tuple) in         *)
+      
+      let attribute_hashtable = Xmlm_utils.extract_attribute_hashtable_from_xml to_xml in
+      
+      let to_sec = int_of_string (Hashtbl.find attribute_hashtable ("","sec")) in
+      let to_usec = int_of_string (Hashtbl.find attribute_hashtable ("","usec")) in
+      
+      assert(to_usec = 0);
+      
+      Some to_sec
+    | _ -> assert(false)
+  in
+  
+  (* debug "of_xml: end"; *)
+
+  new_t
+    filter_list
+    start_time_option
+    end_time_option
+
+let to_xml t =
+  Myxml.Element
+    (
+      (
+	("", "slice")
+	  ,
+	[]
+      )
+	(* [ ("from" , (string_of_int t.start_time)) ; ("to" , (string_of_int t.end_time)) ] *)
+	,
+      (List.map Filter.to_xml t.filter_list)
+    )
+
+let match_five_tuple_option
+    src_ip_option
+    dst_ip_option
+    proto_option
+    src_port_option
+    dst_port_option
+    t
+    =
+  List.fold_left
+    (fun acc filter ->
+      acc
+      ||
+	Filter.match_five_tuple_option
+	src_ip_option
+	dst_ip_option
+	proto_option
+	src_port_option
+	dst_port_option
+	filter
+    )
+    false
+    t.filter_list
+
+let match_five_tuple
+    src_ip
+    dst_ip
+    proto
+    src_port
+    dst_port
+    t
+    =  
+  List.fold_left
+    (fun acc filter ->
+      acc
+      ||
+	(Filter.match_five_tuple
+	   src_ip
+	   dst_ip
+	   proto
+	   src_port
+	   dst_port
+	   filter)
+    )
+    false
+    t.filter_list
+
+(* let to_five_tuple_flow t = *)
+(*   List.map *)
+(*     Filter.to_five_tuple_flow *)
+(*     t.filter_list *)
+
+(* let to_five_tuple_option t = *)
+(*   List.map *)
+(*     Filter.to_five_tuple_option *)
+(*     t.filter_list *)
+
+(* let of_simple_mawilab_anomaly                                                         *)
+(* 		simple_mawilab_anomaly                                                            *)
+
+(* 		date                                                                              *)
+(* =                                                                                     *)
+(* 	(                                                                                   *)
+(* 		new_t                                                                             *)
+(* 			simple_mawilab_anomaly.Simple_mawilab_anomaly.mawilab_anomaly_type              *)
+
+(* 			simple_mawilab_anomaly.Simple_mawilab_anomaly.distance_to_normal                *)
+(* 			simple_mawilab_anomaly.Simple_mawilab_anomaly.distance_to_abnormal              *)
+
+(* 			date                                                                            *)
+
+(* 			simple_mawilab_anomaly.Simple_mawilab_anomaly.heuristic_anomaly_detailed_type   *)
+(* 			simple_mawilab_anomaly.Simple_mawilab_anomaly.mawilab_detector_detection_result *)
+(* 	)                                                                                   *)
+
+(* let detection_is_valid                                                                                                                                                   *)
+(* 		t                                                                                                                                                                    *)
+(* =                                                                                                                                                                        *)
+(* 	Mawilab_detector_detection_result.is_valid t.mawilab_detector_detection_result                                                                                         *)
+
+(* let to_xml t =                                                                                                                                                           *)
+(* 	Xml.Element                                                                                                                                                            *)
+(* 	("filter"                                                                                                                                                              *)
+(* 		,                                                                                                                                                                    *)
+(* 		(                                                                                                                                                                    *)
+(* 			match t with                                                                                                                                                       *)
+(* 			| Src address -> [ ("src_ip" , Utils.string_ip_addr_of_int32 address) ]                                                                                            *)
+(* 			| Dst address -> [ ("dst_ip" , Utils.string_ip_addr_of_int32 address) ]                                                                                            *)
+(* 			| Src_dst_tuple (src_address , dst_address) -> [ ("src_ip" , Utils.string_ip_addr_of_int32 src_address) ; ("dst_ip" , Utils.string_ip_addr_of_int32 dst_address) ] *)
+(* 		)                                                                                                                                                                    *)
+(* 		,                                                                                                                                                                    *)
+(* 		[ ]                                                                                                                                                                  *)
+(* 	)                                                                                                                                                                      *)

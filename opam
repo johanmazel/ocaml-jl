@@ -15,4 +15,4 @@ build: [
 install: [
   ["ocaml" "setup.ml" "-install"]
 ]
-remove: [["ocamlfind" "remove" "admd"]]
+remove: [["ocamlfind" "remove" "jl"]]

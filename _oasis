@@ -25,10 +25,13 @@ Library jl
                  Map_ext_instantiations,
                  Hashtbl_utils,
                  Hashtbl_utils_instantiations,
+
+                 Bin_prot_marshal_manager,
                  Option_utils,
                  Unix_utils,
                  Progress_manager,
                  Execution_time_measure,
+
                  Feature,
                  Feature_container,
                  Feature_data_structures

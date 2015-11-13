@@ -35,6 +35,8 @@ Library jl
 
                  String_distance,
 
+                 Value_variant,
+
                  Bin_prot_marshal_manager,
                  Option_utils,
                  Unix_utils,

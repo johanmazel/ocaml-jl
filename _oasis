@@ -29,6 +29,12 @@ Library jl
                  Parallelization_mode,
                  Map_data,
 
+                 Aggr_data,
+
+                 Parser_utils,
+
+                 String_distance,
+
                  Bin_prot_marshal_manager,
                  Option_utils,
                  Unix_utils,

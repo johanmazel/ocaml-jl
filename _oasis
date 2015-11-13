@@ -26,6 +26,9 @@ Library jl
                  Hashtbl_utils,
                  Hashtbl_utils_instantiations,
 
+                 Parallelization_mode,
+                 Map_data,
+
                  Bin_prot_marshal_manager,
                  Option_utils,
                  Unix_utils,
@@ -39,6 +42,7 @@ Library jl
                  batteries,
                  core_kernel,
                  core,
+                 parmap,
                  comparelib,
                  comparelib.syntax,
                  sexplib,

@@ -16,3 +16,10 @@ install: [
   ["ocaml" "setup.ml" "-install"]
 ]
 remove: [["ocamlfind" "remove" "jl"]]
+depends: [
+#  "ocamlfind" {>= "1.5.3"}
+  "batteries"
+  "core_kernel"
+  "core"
+  "parmap"
+]

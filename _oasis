@@ -12,7 +12,10 @@ Library jl
   Findlibname:   jl
   Modules:       Array_ext,
                  List_ext,
+                 Hashtbl_ext,
                  Hashset,
+                 Tree,
+                 Binary_tree,
                  Ptree,
                  Avltree,
                  Iset,

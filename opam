@@ -17,7 +17,7 @@ install: [
 ]
 remove: [["ocamlfind" "remove" "jl"]]
 depends: [
-#  "ocamlfind" {>= "1.5.3"}
+  "ocamlfind"
   "oasis"
   "batteries"
   "core_kernel"

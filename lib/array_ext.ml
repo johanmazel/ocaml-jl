@@ -35,3 +35,31 @@ let shuffle a =
       Array.unsafe_set a j tmp
     )
   done
+
+let fold_succ f acc a =
+  if length a = 0 then
+    acc
+  else
+    let a_wo_first = sub a 1 (length a - 1) in
+
+    let previous_ref = ref (a.(0)) in
+
+    let result =
+      fold_left
+        (fun acc current ->
+           let new_acc =
+             f
+               acc
+               !previous_ref
+               current
+           in
+
+           previous_ref := current;
+
+           new_acc
+        )
+        acc
+        a_wo_first
+    in
+
+    result

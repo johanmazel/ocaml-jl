@@ -21,7 +21,7 @@ module Core_hashtbl_type = struct
       ~init: acc
       
   let iter f t =
-    Core_kernel.Core_hashtbl.iteri
+    Core_kernel.Core_hashtbl.iter
       t
       ~f: (fun ~key: key ~data: data ->
           f key data

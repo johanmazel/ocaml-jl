@@ -24,4 +24,7 @@ depends: [
   "core_kernel"
   "core"
   "parmap"
+  "comparelib"
+  "pa_sexp_conv"
+  "pa_bin_prot"
 ]

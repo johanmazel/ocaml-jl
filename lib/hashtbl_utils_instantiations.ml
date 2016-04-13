@@ -1,6 +1,14 @@
 
+module L = BatList
+module HT = BatHashtbl
 
+module BatHashtbl = struct
 
+  include HT
+    
+  let to_list t = L.of_enum (HT.enum t)
+      
+end
 
 module BatHashtbl_utils = Hashtbl_utils.Make(BatHashtbl)
 
@@ -25,7 +33,10 @@ module Core_hashtbl_type = struct
       t
       ~f: (fun ~key: key ~data: data ->
           f key data
-        )
+      )
+
+  let to_list t = Core_kernel.Core_hashtbl.to_alist t
+    
 end
 
 module Core_hashtbl_utils = Hashtbl_utils.Make(Core_hashtbl_type)

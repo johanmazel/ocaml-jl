@@ -1,4 +1,6 @@
 
+(* module L = List_ext *)
+
 module type HASHTBL_TYPE = sig
 
   type ('a, 'b) t
@@ -9,6 +11,8 @@ module type HASHTBL_TYPE = sig
     
   val fold : ('a -> 'b -> 'c -> 'c) -> ('a, 'b) t -> 'c -> 'c    
   val iter : ('a -> 'b -> unit) -> ('a, 'b) t -> unit
+
+  val to_list : ('a, 'b) t -> ('a * 'b) list
     
 end
 
@@ -192,6 +196,48 @@ module Make = functor (Hashtbl_type : HASHTBL_TYPE) -> struct
         1, option
     )
 
+  let diff
+      key_comparator
+      element_comparator
+      
+      t1
+      t2
+      =
+    (
+      let m1 =
+	Core.Std.Map.of_alist_exn
+	  ~comparator: key_comparator
+	  (Hashtbl_type.to_list
+	     t1
+	  )
+      in
+      let m2 =
+	Core.Std.Map.of_alist_exn
+	  ~comparator: key_comparator
+	  (Hashtbl_type.to_list
+	     t2
+	  )
+      in
+      
+      let d =
+	Core.Std.Map.symmetric_diff
+	  ~data_equal: element_comparator
+	  m1
+	  m2
+      in
+
+      (* let diff_t = *)
+      (* 	Core.Std.Map.to_alist *)
+      (* 	  r *)
+      (* in *)
+
+      (* diff_t *)
+
+      d
+	
+      (* assert(1) *)
+    )
+      
   let append
       data_compare
       h

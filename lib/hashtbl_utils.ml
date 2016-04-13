@@ -2,8 +2,7 @@
 module type HASHTBL_TYPE = sig
 
   type ('a, 'b) t
-    
-    
+        
   val add : ('a, 'b) t -> 'a -> 'b -> unit
     
   val find : ('a, 'b) t -> 'a -> 'b
@@ -19,72 +18,178 @@ module Make = functor (Hashtbl_type : HASHTBL_TYPE) -> struct
       element_compare
       hashtable1
       hashtable2
-    =
+      =
     (
       let result12 =
         Hashtbl_type.fold
-        (fun key1 element1 bool ->
-           try
-             (
-               let element2 =
-               Hashtbl_type.find
-                 hashtable2
-                 key1
-               in
-
-               bool
-               &&
-             (
-               if element_compare element1 element2 = 0 then
-                 true
-               else
-                 false
-             )
-             )
-           with
-           | Not_found ->
-             (
-               false
-             )
-        )
-        hashtable1
-        true
+          (fun key element1 bool ->
+            try
+              (
+		let element2 =
+		  Hashtbl_type.find
+                    hashtable2
+                    key
+		in
+		
+		bool
+		&&
+		  (
+		    if element_compare element1 element2 = 0 then
+		      true
+		    else
+		      false
+		  )
+	      )
+            with
+            | Not_found ->
+	       (
+		 false
+	       )
+          )
+	  hashtable1
+	  true
       in
 
       let result21 =
         Hashtbl_type.fold
-        (fun key2 element2 bool ->
-           try
-             (
-               let element1 =
-               Hashtbl_type.find
-                 hashtable1
-                 key2
-               in
+          (fun key element2 bool ->
+	    try
+	      (
+		let element1 =
+		  Hashtbl_type.find
+		    hashtable1
+		    key
+		in
 
-               bool
-               &&
-             (
-               if element_compare element1 element2 = 0 then
-                 true
-               else
-                 false
-             )
-             )
-           with
-           | Not_found ->
-             (
-               false
-             )
-        )
-        hashtable2
-        true
+		bool
+		&&
+		  (
+		    if element_compare element1 element2 = 0 then
+		      true
+		    else
+		      false
+		  )
+	      )
+	    with
+	    | Not_found ->
+	       (
+		 false
+	       )
+          )
+          hashtable2
+          true
       in
 
       if result12 && result21 then
         0
       else
         1
+    )
+      
+  let compare_diff_key
+      element_compare
+      hashtable1
+      hashtable2
+      =
+    (
+      let result12, option12 =
+        Hashtbl_type.fold
+          (fun key element1 (bool, option) ->
+            try
+              (
+		let element2 =
+		  Hashtbl_type.find
+                    hashtable2
+                    key
+		in
+
+		let b =
+		  if element_compare element1 element2 = 0 then
+		    true
+		  else
+		    false
+		in
+		
+		(bool
+		 &&
+		   b)
+		  ,		
+		(
+		  if bool = false then
+		    option
+		  else
+		    if b then
+		      None
+		    else
+		      Some key
+		)
+	      )
+            with
+            | Not_found ->
+	       (
+		 false, Some key
+	       )
+          )
+	  hashtable1
+	  (true, None)
+      in
+
+      let result21, option21 =
+        Hashtbl_type.fold
+          (fun key element2 (bool, option) ->
+	    try
+	      (
+		let element1 =
+		  Hashtbl_type.find
+		    hashtable1
+		    key
+		in
+
+		let b =
+		  if element_compare element1 element2 = 0 then
+		    true
+		  else
+		    false
+		in
+		
+		(bool
+		 &&
+		   b)
+		  ,		
+		(
+		  if bool = false then
+		    option
+		  else
+		    if b then
+		      None
+		    else
+		      Some key
+		)
+	      )
+	    with
+	    | Not_found ->
+	       (
+		 false, Some key
+	       )
+          )
+          hashtable2
+          (true, None)
+      in
+
+      let option =
+	if result12 == false then
+	  option12
+	else
+	  if result21 == false then
+	    option21
+	  else
+	    None
+      in
+      
+      if result12 && result21 then
+        0, option
+      else
+        1, option
     )
 
   let append

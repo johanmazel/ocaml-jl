@@ -1,16 +1,16 @@
 
-module L = BatList
-module HT = BatHashtbl
+(* module L = BatList *)
+(* module HT = BatHashtbl *)
 
-module BatHashtbl = struct
+module BatHashtbl_spec = struct
 
-  include HT
+  include BatHashtbl
     
-  let to_list t = L.of_enum (HT.enum t)
+  let to_list t = BatList.of_enum (BatHashtbl.enum t)
       
 end
 
-module BatHashtbl_utils = Hashtbl_utils.Make(BatHashtbl)
+module BatHashtbl_utils = Hashtbl_utils.Make(BatHashtbl_spec)
 
 
 module Core_hashtbl_type = struct

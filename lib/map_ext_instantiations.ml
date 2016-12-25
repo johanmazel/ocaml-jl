@@ -6,7 +6,9 @@ open Bin_prot.Std
 module Int_map = struct
   include Map_ext.Make(
     struct 
-      type t = int with compare, bin_io
+      type t = int
+      [@@deriving compare, bin_io]
+      (* with compare, bin_io *)
       let to_string t = string_of_int t
     end)
 end
@@ -14,7 +16,9 @@ end
 module Reverse_int_map = struct
   include Map_ext.Make(
     struct
-      type t = int with compare, bin_io
+      type t = int
+      [@@deriving compare, bin_io]
+      (* with compare, bin_io *)
       let compare t1 t2 = compare t1 t2 * -1
       let to_string t = string_of_int t
     end)
@@ -23,7 +27,10 @@ end
 module Int32_map = struct
   include Map_ext.Make(
     struct
-      type t = Int32.t with compare
+      (* type t = Int32.t *)
+      type t = int32
+      [@@deriving compare, bin_io]
+      (* with compare, bin_io *)
       let compare = Int32.compare
       let to_string t = Int32.to_string t
     end)
@@ -32,7 +39,9 @@ end
 module Int_tuple_map = struct
   include Map_ext.Make(
     struct
-      type t = int * int with compare, bin_io
+      type t = int * int
+      [@@deriving compare, bin_io]
+      (* with compare, bin_io *)
       let to_string (int_1, int_2) =
         sprintf
           "%d %d"
@@ -43,7 +52,9 @@ end
 
 module Int_set_map = struct
   include Map_ext.Make(struct
-      type t = Set_ext_instantiations.Int_set.t with compare
+      type t = Set_ext_instantiations.Int_set.t
+      [@@deriving compare]
+      (* with compare *)
       let to_string int_set =
         Set_ext_instantiations.Int_set.to_string
           int_set
@@ -66,7 +77,9 @@ end
 module Reverse_float_map = struct
   include Map_ext.Make(
     struct
-      type t = float with compare, bin_io
+      type t = float
+      [@@deriving compare, bin_io]
+      (* with compare, bin_io *)
       let compare t1 t2 = compare t1 t2 * -1
       let to_string t = string_of_float t
     end)

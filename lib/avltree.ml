@@ -7,7 +7,8 @@ open Bin_prot.Std
 type 'a tree =
   | Empty
   | Node of 'a tree * 'a * 'a tree * int (* height *)
-with compare, sexp, bin_io
+[@@deriving compare, sexp, bin_io]
+(* with compare, sexp, bin_io *)
 
 let empty = Empty
 

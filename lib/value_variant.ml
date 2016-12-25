@@ -8,7 +8,8 @@ type t =
 | Int of int
 | Int32 of int32
 | String of string
-with compare, sexp, bin_io
+[@@deriving compare, sexp, bin_io]
+(* with compare, sexp, bin_io *)
 
 let to_string
       t

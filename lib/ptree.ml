@@ -39,7 +39,8 @@ have the empty list as their list of sub trees. *)
 type 'a t =
 | Empty
 | Node of 'a * ('a t list)
-with compare, sexp, bin_io
+[@@deriving compare, sexp, bin_io]
+(* with compare, sexp, bin_io *)
 
 exception Empty_tree;;
 exception Not_found;;

@@ -9,7 +9,8 @@ type t =
     indice : int;
     name : string;
   }
-with sexp, bin_io
+[@@deriving sexp, bin_io]
+(* with sexp, bin_io *)
 
 let new_t
     indice

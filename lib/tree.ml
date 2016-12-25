@@ -6,8 +6,10 @@ open Bin_prot.Std
 
 type ('a, 'b) t =
   Leaf of 'b
-| Node of 'a * (('a, 'b) t list)
-with compare, sexp, bin_io
+  | Node of 'a * (('a, 'b) t list)
+[@@deriving compare, sexp, bin_io]
+(* with compare *)
+   (* , sexp, bin_io *)
 
 (* [fold]: Fold function for trees. *)
 let rec fold

@@ -4,7 +4,8 @@ open Printf
 type ('a, 'b) t =
 | Leaf of 'b
 | Node of 'a * ('a, 'b) t * ('a, 'b) t
-with compare, sexp, bin_io
+[@@deriving compare, sexp, bin_io]
+(* with compare, sexp, bin_io *)
 
 let rec fold
     f_leaf

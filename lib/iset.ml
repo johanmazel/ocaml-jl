@@ -42,7 +42,8 @@ end
 module Make = functor (T: Type) -> struct
 
   type t = (T.t * T.t) Avltree.tree
-  with compare, sexp, bin_io
+  [@@deriving compare, sexp, bin_io]
+  (* with compare, sexp, bin_io *)
 
   type elt = T.t
 
